@@ -17,8 +17,8 @@ var randomY = function(){return randomGenerator((height-radius*2))};
 var color = d3.scale.category20();
 
 var force = d3.layout.force()
-              .charge(-150)
-              .linkDistance(80)
+              .charge(-500)
+              .linkDistance(30)
               .size([width,height]);
 
 force.nodes(TestData.nodes)
@@ -28,15 +28,20 @@ force.nodes(TestData.nodes)
 var friends = board.selectAll(".friends")
                    .data(TestData.nodes)
                    .enter()
-                   .append('circle')
-                   .attr({
-                   	class: "friend",
-                   	cx: randomX,
-                   	cy: randomY,
-                   	r: radius
-                   })
-                   .style("fill",function(d){return color(d.group)})
+                   .append('g')
+                   .attr("class","friend")
                    .call(force.drag);
+
+friends.append("circle")
+       .style("fill",function(d){return color(d.group);})
+       .style("cursor","pointer")
+       .attr("r",radius);
+
+friends.append("text")
+       .attr("dx",12)
+       .attr("dy",".35em")
+       // .attr("dy",12)
+       .text(function(d){return d.name;});
 
 var links = board.selectAll(".links")
                  .data(TestData.links)
@@ -52,8 +57,9 @@ force.on("tick",function(){
       .attr("x2",function(d){return d.target.x;})
       .attr("y2",function(d){return d.target.y;});
 
-  friends.attr("cx",function(d){return d.x})
-         .attr("cy",function(d){return d.y});
+  // friends.attr("cx",function(d){return d.x})
+  //        .attr("cy",function(d){return d.y});
 
+  friends.attr("transform",function(d){return "translate(" + d.x + "," + d.y +")";});
 })
 

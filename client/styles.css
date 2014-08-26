@@ -2,3 +2,12 @@
   stroke:#999;
   stroke-opacity:0.6;
 }
+
+.friends circle{
+  cursor:pointer;
+} 
+
+.friends text{
+  pointer-events: none;
+  font-size:10px;
+}
