@@ -14,7 +14,8 @@ var LINKEDIN_API_KEY = '75b34w5k14znrk';
 var LINKEDIN_SECRET_KEY = 'Yly2468vRePd8DNd';
 var CALLBACK = "http://127.0.0.1:3000/auth/linkedin/callback";
 var Linkedin = require('node-linkedin')(LINKEDIN_API_KEY,LINKEDIN_SECRET_KEY,CALLBACK);
-var linkedin;
+
+ // linkedin;
 // app.use(express.logger());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
@@ -32,6 +33,19 @@ passport.serializeUser(function(user,done){
 passport.deserializeUser(function(obj,done){
   done(null,obj);
 });
+
+var ensureAuthenticated = function(req,res,next){
+	console.log("in authenticated");
+  if(req.isAuthenticated()){
+  	console.log("pass authenticated??");
+  	return next();
+  }else
+  {
+  	console.log('not pass auth');
+    res.redirect('/login');
+  	
+  }
+};
 
 passport.use(new LinkedInStrategy({
     consumerKey: LINKEDIN_API_KEY,
@@ -56,23 +70,28 @@ passport.use(new LinkedInStrategy({
 
 ));
 
-app.get('/',function(req,res){
-  res.sendfile('client/index.html');
+app.get('/login',function(req,res){
+  res.sendfile('client/login.html');
+});
+
+app.get('/',ensureAuthenticated,function(req,res){
+  console.log('hello');
+  res.sendfile('client/main.html');
 });
 
 // app.get('/auth/linkedin',passport.authenticate('linkedin',{scope:['r_basicprofile','r_emailaddress','r_network']}),
 //   function(req,res){
 // });
 
-// // app.get('/')
-
 // app.get('/auth/linkedin/callback',passport.authenticate('linkedin',{failureRedirect: '/'}),
 //     function(req,res){
-//       console.log('+++++++++++',req);
-//       res.redirect('/')
+//       console.log('+++++++++++',req.connections);
+//       res.redirect('/index');
 //     });
 
-
+app.get('/index',function(req,res){
+  res.sendfile('client/main.html');
+})
 
 app.get('/auth/linkedin', function(req, res) {
     // This will ask for permisssions etc and redirect to callback url.
@@ -85,17 +104,23 @@ app.get('/auth/linkedin/callback', function(req, res) {
             return console.error(err);
 
         var accessToken = JSON.parse(results)['access_token'];
+        var testid;
         linkedin = Linkedin.init(accessToken);
         linkedin.connections.retrieve(function(err,connections){
-          console.log("+++++++",connections);
+          testid = connections.values[50].id;
+          // testid = "s5873235657547091968";
+          // testid = connections.values[5].apiStandardProfileRequest.url;
+          console.log("+++++++",connections.values[10].id);
+	      linkedin.people.id(testid,['id','first-name','last-name','relation-to-viewer'],function(err,$in){
+	      	if(err) console.error(err);
+	      	else
+	        console.log("------",JSON.stringify(arguments));
+	      });
         });
-        console.log("-------",JSON.parse(results)['access_token']);
-        return res.redirect('/');
+
+        return res.redirect('/index');
     });
 });
-
-
-
 
 
 app.get('/logout',function(req,res){
