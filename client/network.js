@@ -16,9 +16,11 @@ var randomX = function(){return randomGenerator(width-radius*2);};
 var randomY = function(){return randomGenerator((height-radius*2))};
 var color = d3.scale.category20();
 
+// var ggraph = d3.graph();
+
 var force = d3.layout.force()
-              .charge(-500)
-              .linkDistance(30)
+              .charge(-300)
+              .linkDistance(20)
               .size([width,height]);
 
 force.nodes(TestData.nodes)

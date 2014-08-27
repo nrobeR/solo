@@ -8,6 +8,7 @@ var session = require('express-session');
 var cookieParser = require('cookie-parser');
 var Promise = require('bluebird');
 var app = express();
+var util = require('util');
 
 
 var LINKEDIN_API_KEY = '75b34w5k14znrk';
