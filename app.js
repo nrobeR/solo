@@ -9,7 +9,8 @@ var cookieParser = require('cookie-parser');
 var Promise = require('bluebird');
 var app = express();
 var util = require('util');
-
+var dataHandler = require('./data-handler');
+var helper = require('./util');
 
 var LINKEDIN_API_KEY = '75b34w5k14znrk';
 var LINKEDIN_SECRET_KEY = 'Yly2468vRePd8DNd';
@@ -59,12 +60,12 @@ passport.use(new LinkedInStrategy({
   	var args = arguments;
   	process.nextTick(function(){
   	  console.log('--------',token);
-      // linkedin = Linkedin.init(token);
-      // linkedin.people.me(['id','first-name','last-name'],function(err,$in){
-      // 	if(err) throw(err);
-      // 	else console.log($in);
-      // });
-  	  // console.log("+++++++",JSON.stringify(args));
+      linkedin = Linkedin.init(token);
+      linkedin.people.me(['id','first-name','last-name'],function(err,$in){
+      	if(err) throw(err);
+      	else console.log($in);
+      });
+  	  console.log("+++++++",JSON.stringify(args));
   	  return done(null,profile);
   	});
   }
@@ -103,22 +104,30 @@ app.get('/auth/linkedin/callback', function(req, res) {
     Linkedin.auth.getAccessToken(res, req.query.code, function(err, results) {
         if ( err )
             return console.error(err);
-
         var accessToken = JSON.parse(results)['access_token'];
-        var testid;
         linkedin = Linkedin.init(accessToken);
         linkedin.connections.retrieve(function(err,connections){
-          testid = connections.values[50].id;
-          // testid = "s5873235657547091968";
-          // testid = connections.values[5].apiStandardProfileRequest.url;
-          console.log("+++++++",connections.values[10].id);
-	      linkedin.people.id(testid,['id','first-name','last-name','relation-to-viewer'],function(err,$in){
-	      	if(err) console.error(err);
-	      	else
-	        console.log("------",JSON.stringify(arguments));
-	      });
-        });
+          var connectionsFiltered = dataHandler.filterConnections(connections);
 
+          var nodes = helper.createNodes(connectionsFiltered);
+
+          var links = [];
+          nodes.forEach(function(item,index){
+  	        linkedin.people.id(item.id,['id','first-name','last-name','relation-to-viewer'],function(err,$in){
+  	      	  if(err) console.error(err);
+  	      	  else{
+                console.log(">>>>>>>>>>>>>",$in);
+                if($in.relationToViewer.connections._total > 0){
+                  var mutualConnections = $in.relationToViewer.connections.values;
+                  // console.log(">>>>>>>>>>>>",mutualConnections);
+                  links.concat(helper.createLinks(item.id,mutualConnections));        
+                }
+              }
+  	        });
+          });
+
+          // console.log(">>>>>>>>>",links);
+        });
         return res.redirect('/index');
     });
 });

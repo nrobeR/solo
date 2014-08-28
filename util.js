@@ -1,25 +1,35 @@
-exports.createGraph = function(id,mutualConnectionArr){
+exports.createLinks = function(id,mutualConnectionArr){
   var result = [];
-  mutualConnectionArr.forEach(connection){
-  	result.push({source:id,target:connection.id,value:1});
-  }
+  mutualConnectionArr.forEach(function(connection){
+
+  	result.push({source:id,target:connection.person.id,value:1});
+  });
 };
 
 exports.createNodes = function(connectionArr){
   var result = [];
-  connectionArr.forEach(item){
-  	result.push({name:item.firstname + " " + item.lastname,id:item.id, group:getIndustryId(item.industry)});
-  };
+
+  connectionArr.forEach(function(item){
+    if(item.id !== 'private'){
+      result.push({
+        name:item.firstName + " " + item.lastName,
+        id:item.id,
+        group:getIndustryId(item.industry),
+        industry:item.industry
+      });
+    }
+  })
 
   return result;
 };
 
 var getIndustryId = function(str){
+  str = str || "not defined";
   return getIndexBelowMaxForKey(str,20)+1;
 };
 
 
-// This is a "hashing function". You don't need to worry about it, just use it
+// This is a "hashing function". Use it
 // to turn any string into an integer that is well-distributed between
 // 0 and max - 1
 var getIndexBelowMaxForKey = function(str, max){

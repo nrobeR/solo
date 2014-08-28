@@ -1,6 +1,6 @@
 var width = 800;
 var height = 500;
-var radius = 10;
+var radius = 5;
 var node, link;
 
 var board = d3.select("body")
@@ -19,8 +19,8 @@ var color = d3.scale.category20();
 // var ggraph = d3.graph();
 
 var force = d3.layout.force()
-              .charge(-300)
-              .linkDistance(20)
+              .charge(-1000)
+              .linkDistance(5)
               .size([width,height]);
 
 force.nodes(TestData.nodes)
